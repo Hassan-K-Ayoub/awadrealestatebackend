@@ -226,7 +226,7 @@ class PropertyController extends Controller
      */
     public function update(Request $request, Property $property)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title'=>'required|string|max:255',
             'images' => 'sometimes|array',
             'description' => 'required|string',
@@ -269,6 +269,31 @@ class PropertyController extends Controller
                         $path = $image->store('properties/images', 'public');
                         $imagePaths[] = $path;
                     }
+
+                    $propertyData = [
+                        'title' => $validated['title'],
+                        'description' => $validated['description'],
+                        'price' => $validated['price'],
+                        'space' => $validated['space'],
+                        'bedrooms' => $validated['bedrooms'],
+                        'bathrooms' => $validated['bathrooms'],
+                        'salons' => $validated['salons'],
+                        'kitchens' => $validated['kitchens'],
+                        'terraces_enabled' => $validated['terraces'],
+                        'terraces_count' => $validated['terraces'] ? $validated['terraces_count'] : null,
+                        'floors' => $validated['floors'],
+                        'living_rooms' => $validated['living_rooms'],
+                        'swimming_pools_enabled' => $validated['swimming_pools'],
+                        'swimming_pools_count' => $validated['swimming_pools'] ? $validated['swimming_pools_count'] : null,
+                        'parking_enabled' => $validated['parking'],
+                        'parking_count' => $validated['parking'] ? $validated['parking_count'] : null,
+                        'garden_enabled' => $validated['garden'],
+                        'garden_count' => $validated['garden'] ? $validated['garden_count'] : null,
+                        'condition' => $validated['condition'],
+                        'images' => json_encode($imagePaths),
+                    ];
+
+
                 }
 
                 // Prepare property data
@@ -292,7 +317,6 @@ class PropertyController extends Controller
                     'garden_enabled' => $validated['garden'],
                     'garden_count' => $validated['garden'] ? $validated['garden_count'] : null,
                     'condition' => $validated['condition'],
-                    'images' => json_encode($imagePaths),
                 ];
 
                 // Update property
@@ -325,16 +349,22 @@ class PropertyController extends Controller
                 'status.status'
             ]);
 
-            return response()->json([
+            $response = [
                 'message' => 'Property updated successfully',
                 'property' => [
                     'data' => $property,
                     'location' => $property->location->location,
                     'type' => $property->type->type,
-                    'status' => $property->status->status
+                    'status' => $property->status->status,
                 ],
-                'image_urls' => array_map(fn($path) => asset("storage/$path"), $property->images ?? [])
-            ], 200);
+            ];
+
+            if ($request->hasFile('images')) {
+                $response['image_urls'] = array_map(fn($path) => asset("storage/$path"), $property->images);
+            }
+
+            return response()->json($response, 200);
+
 
         } catch (\Exception $e) {
             Log::error('Property update failed: ' . $e->getMessage());
