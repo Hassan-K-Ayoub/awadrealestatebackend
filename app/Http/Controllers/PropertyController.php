@@ -360,7 +360,7 @@ class PropertyController extends Controller
             ];
 
             if ($request->hasFile('images')) {
-                $response['image_urls'] = array_map(fn($path) => asset("storage/$path"), $property->images);
+                $response['image_urls'] = array_map(fn($path) => asset("storage/$path"), $imagePaths);
             }
 
             return response()->json($response, 200);
