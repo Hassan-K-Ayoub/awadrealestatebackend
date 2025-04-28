@@ -12,12 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('property_status', function (Blueprint $table) {
-            $table->unsignedBigInteger('property_id')->primary();
+            $table->id();
+            $table->unsignedBigInteger('property_id')->index();
             $table->unsignedBigInteger('status_id')->index();
             $table->timestamps();
 
             $table->foreign('property_id')->references('id')->on('properties')->onDelete('cascade');
             $table->foreign('status_id')->references('id')->on('statuses')->onDelete('cascade');
+            $table->unique(['property_id', 'status_id']);
         });
     }
 

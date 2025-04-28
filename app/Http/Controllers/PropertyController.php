@@ -6,6 +6,9 @@ use App\Models\Property;
 use App\Models\PropertyLocation;
 use App\Models\PropertyType;
 use App\Models\PropertyStatus;
+use App\Models\Location;
+use App\Models\Type;
+use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +40,9 @@ class PropertyController extends Controller
                 $q->select('property_id')
                     ->from('property_location')
                     ->where('location_id', $request->location_id);
-            });
+            })->with(['locations' => function($q) {
+                $q->select('location'); // Assuming 'name' is the column with the location name
+            }]);
         }
 
         if($request->type_id){
@@ -45,7 +50,9 @@ class PropertyController extends Controller
                 $q->select('property_id')
                     ->from('property_type')
                     ->where('type_id', $request->type_id);
-            });
+            })->with(['types' => function($q) {
+                $q->select('type'); // Assuming 'name' is the column with the location name
+            }]);
         }
 
         if($request->status_id){
@@ -53,21 +60,36 @@ class PropertyController extends Controller
                 $q->select('property_id')
                     ->from('property_status')
                     ->where('status_id', $request->status_id);
-            });
+            })->with(['statuses' => function($q) {
+                $q->select('status'); // Assuming 'name' is the column with the location name
+            }]);
         }
 
-        $properties = $query->with(['location', 'type', 'status'])
-            ->orderBy('created_at', 'desc')
-            ->paginate($request->per_page ?? 10);
+        $properties = $query
+        // Include names in the result (no eager loading needed)
+        ->addSelect([
+            // Location name
+            'location' => Location::select('location')
+                ->join('property_location', 'locations.id', '=', 'property_location.location_id')
+                ->whereColumn('property_location.property_id', 'properties.id')
+                ->limit(1),
+            // Type name
+            'type' => Type::select('type')
+                ->join('property_type', 'types.id', '=', 'property_type.type_id')
+                ->whereColumn('property_type.property_id', 'properties.id')
+                ->limit(1),
+            // Status name
+            'status' => Status::select('status')
+                ->join('property_status', 'statuses.id', '=', 'property_status.status_id')
+                ->whereColumn('property_status.property_id', 'properties.id')
+                ->limit(1),
+        ])
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-            return response()->json([
-                'data' => $properties->items(),
-                'meta' => [
-                    'current_page' => $properties->currentPage(),
-                    'per_page' => $properties->perPage(),
-                    'total' => $properties->total(),
-                ],
-            ]);
+        return response()->json([
+            'data' => $properties,
+        ]);
     }
 
     /**
@@ -94,17 +116,17 @@ class PropertyController extends Controller
             'bathrooms' => 'required|integer|min:0',
             'salons' => 'required|integer|min:0',
             'kitchens' => 'required|integer|min:0',
-            'terraces' => 'required|in:true,false,1,0',
+            'terraces' => 'boolean',
             'terraces_count' => 'nullable|integer|required_if:terraces,true|min:0',
             'floors' => 'required|integer|min:1',
             'living_rooms' => 'required|integer|min:0',
-            'swimming_pools' => 'required|in:true,false,1,0',
+            'swimming_pools' => 'boolean',
             'swimming_pools_count' => 'nullable|integer|required_if:swimming_pools,true|min:0',
-            'parking' => 'required|in:true,false,1,0',
+            'parking' => 'boolean',
             'parking_count' => 'nullable|integer|required_if:parking,true|min:0',
-            'garden' => 'required|in:true,false,1,0',
+            'garden' => 'boolean',
             'garden_count' => 'nullable|integer|required_if:garden,true|min:0',
-            'condition' => 'required|string|in:new,used,renovated',
+            'condition' => 'required|string',
             'type_id' => 'required|exists:types,id',
             'location_id' => 'required|exists:locations,id',
             'status_id' => 'required|exists:statuses,id',
@@ -210,7 +232,30 @@ class PropertyController extends Controller
      */
     public function show(Property $property)
     {
-        return response()->json($property,201);
+        // Load the property with additional computed fields
+        $propertyWithDetails = Property::where('id', $property->id)
+            ->addSelect([
+                // Location name
+                'location' => Location::select('location')
+                    ->join('property_location', 'locations.id', '=', 'property_location.location_id')
+                    ->whereColumn('property_location.property_id', 'properties.id')
+                    ->limit(1),
+
+                // Type name
+                'type' => Type::select('type')
+                    ->join('property_type', 'types.id', '=', 'property_type.type_id')
+                    ->whereColumn('property_type.property_id', 'properties.id')
+                    ->limit(1),
+
+                // Status name
+                'status' => Status::select('status')
+                    ->join('property_status', 'statuses.id', '=', 'property_status.status_id')
+                    ->whereColumn('property_status.property_id', 'properties.id')
+                    ->limit(1),
+            ])
+            ->first(); // Get the single property with added fields
+
+        return response()->json($propertyWithDetails, 200);
     }
 
     /**
@@ -236,16 +281,16 @@ class PropertyController extends Controller
             'bathrooms' => 'required|integer',
             'salons'    => 'required|integer',
             'kitchens'  => 'required|integer',
-            'terraces'  => 'boolean',
-            'terraces_count'    => 'nullable|integer',
+            'terraces'  => 'boolean|',
+            'terraces_count'    => 'nullable|integer|required_if:terraces,true|min:0',
             'floors'   => 'required|integer',
             'living_rooms' => 'required|integer',
             'swimming_pools' => 'boolean',
-            'swimming_pools_count' => 'nullable|integer',
+            'swimming_pools_count' => 'nullable|integer|required_if:swimming_pools,true|min:0',
             'parking' => 'boolean',
-            'parking_count' => 'nullable|integer',
+            'parking_count' => 'nullable|integer|required_if:parking,true|min:0',
             'garden' => 'boolean',
-            'garden_count' => 'nullable|integer',
+            'garden_count' => 'nullable|integer|required_if:garden,true|min:0',
             'condition' => 'required|string',
             'type_id' => 'sometimes|exists:types,id',
             'location_id' => 'sometimes|exists:locations,id',
@@ -409,7 +454,7 @@ class PropertyController extends Controller
                 'error' => 'Property deletion failed',
                 'message' => 'Please try again later',
                 'details' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
+            ], 401);
         }
     }
 }

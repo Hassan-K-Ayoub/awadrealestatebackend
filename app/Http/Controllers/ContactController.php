@@ -32,9 +32,24 @@ class ContactController extends Controller
     {
         $request->validate([
             'full_name' => 'required|string|max:255',
-            'email' => 'email|max:255',
-            'phone' => 'required|string',
+            'email' => 'email|max:255|unique:contacts,email',
+            'phone' => 'required|string|unique:contacts,phone',
         ]);
+
+        if (Contact::where('phone', $request->phone)->exists()) {
+            return response()->json([
+                'message' => 'The phone number has already been taken.',
+                'errors' => ['phone' => ['This phone number is already in use.']]
+            ], 422);
+        }
+
+        // Check if email exists (only if email was provided)
+        if ($request->has('email') && $request->email && Contact::where('email', $request->email)->exists()) {
+            return response()->json([
+                'message' => 'The email has already been taken.',
+                'errors' => ['email' => ['This email is already in use.']]
+            ], 422);
+        }
 
         $contact = Contact::create($request->all());
 
@@ -70,8 +85,30 @@ class ContactController extends Controller
      */
     public function destroy(Contact $contact)
     {
-        $contact->delete();
+        try {
+            // Check if contact exists (implicitly handled by route model binding)
+            if (!$contact->exists) {
+                return response()->json([
+                    'message' => 'Contact not found',
+                    'errors' => ['contact' => ['The specified contact does not exist']]
+                ], 404);
+            }
 
-        return response()->json("Contact deleted successfully", 204);
+            $contact->delete();
+
+            return response()->json([
+                'message' => 'Contact deleted successfully',
+                'data' => [
+                    'id' => $contact->id,
+                    'deleted_at' => now()->toDateTimeString()
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete contact',
+                'errors' => ['server' => ['An unexpected error occurred']]
+            ], 500);
+        }
     }
 }

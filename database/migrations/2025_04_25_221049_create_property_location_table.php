@@ -12,12 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('property_location', function (Blueprint $table) {
-            $table->unsignedBigInteger('property_id')->primary();
+            $table->id();
+            $table->unsignedBigInteger('property_id')->index();
             $table->unsignedBigInteger('location_id')->index();
             $table->timestamps();
 
             $table->foreign('property_id')->references('id')->on('properties')->onDelete('cascade');
             $table->foreign('location_id')->references('id')->on('locations')->onDelete('cascade');
+            $table->unique(['property_id', 'location_id']);
         });
     }
 
