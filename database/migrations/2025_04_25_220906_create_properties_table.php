@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('properties', function (Blueprint $table) {
             $table->id();
             $table->string('title')->required();
-            $table->json('images')->nullable()->required();
+            $table->json('images')->required();
             $table->string('description')->required();
             $table->float('space');
             $table->float('price')->required();
