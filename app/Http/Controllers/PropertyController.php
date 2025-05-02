@@ -44,7 +44,7 @@ class PropertyController extends Controller
                 $q->select('property_id')
                     ->from('property_location')
                     ->where('location_id', $request->location_id);
-            })->with(['locations' => function($q) {
+            })->with(['location' => function($q) {
                 $q->select('location'); // Assuming 'name' is the column with the location name
             }]);
         }
@@ -54,7 +54,7 @@ class PropertyController extends Controller
                 $q->select('property_id')
                     ->from('property_type')
                     ->where('type_id', $request->type_id);
-            })->with(['types' => function($q) {
+            })->with(['type' => function($q) {
                 $q->select('type'); // Assuming 'name' is the column with the location name
             }]);
         }
@@ -64,7 +64,7 @@ class PropertyController extends Controller
                 $q->select('property_id')
                     ->from('property_status')
                     ->where('status_id', $request->status_id);
-            })->with(['statuses' => function($q) {
+            })->with(['status' => function($q) {
                 $q->select('status'); // Assuming 'name' is the column with the location name
             }]);
         }

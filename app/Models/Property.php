@@ -35,18 +35,40 @@ class Property extends Model
 
     // Property.php model
     public function location()
-    {
-        return $this->hasOne(\App\Models\PropertyLocation::class);
-    }
+{
+    return $this->hasOneThrough(
+        \App\Models\Location::class,
+        \App\Models\PropertyLocation::class,
+        'property_id',  // Foreign key on the PropertyLocation table...
+        'id',           // Foreign key on the Location table...
+        'id',           // Local key on the Property table...
+        'location_id'   // Local key on the PropertyLocation table...
+    );
+}
+
 
     public function type()
     {
-        return $this->hasOne(\App\Models\PropertyType::class);
+        return $this->hasOneThrough(
+            \App\Models\Type::class,
+            \App\Models\PropertyType::class,
+            'property_id',  // Foreign key on the PropertyLocation table...
+            'id',           // Foreign key on the Location table...
+            'id',           // Local key on the Property table...
+            'type_id'   // Local key on the PropertyLocation table...
+        );
     }
 
     public function status()
     {
-        return $this->hasOne(\App\Models\PropertyStatus::class);
+        return $this->hasOneThrough(
+            \App\Models\Status::class,
+            \App\Models\PropertyStatus::class,
+            'property_id',  // Foreign key on the PropertyLocation table...
+            'id',           // Foreign key on the Location table...
+            'id',           // Local key on the Property table...
+            'status_id'   // Local key on the PropertyLocation table...
+        );
     }
 
 
