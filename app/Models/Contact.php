@@ -10,5 +10,6 @@ class Contact extends Model
         'full_name',
         'email',
         'phone',
+        'description',
     ];
 }

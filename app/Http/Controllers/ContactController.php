@@ -34,6 +34,7 @@ class ContactController extends Controller
             'full_name' => 'required|string|max:255',
             'email' => 'email|max:255|unique:contacts,email',
             'phone' => 'required|string|unique:contacts,phone',
+            'description' => 'nullable|string|max:1000',
         ]);
 
         if (Contact::where('phone', $request->phone)->exists()) {

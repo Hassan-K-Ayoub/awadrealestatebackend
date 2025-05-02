@@ -33,6 +33,7 @@ return new class extends Migration
             $table->boolean('parking')->default(false);
             $table->integer('parking_count')->nullable();
             $table->string('condition')->required();
+            $table->boolean('featured')->default(false);
             $table->timestamps();
         });
     }

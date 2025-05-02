@@ -29,8 +29,8 @@ class Property extends Model
         'parking_count',
         'garden',
         'garden_count',
-        'condition'
-
+        'condition',
+        'featured'
     ];
 
     // Property.php model

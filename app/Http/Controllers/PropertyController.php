@@ -35,6 +35,10 @@ class PropertyController extends Controller
             });
         }
 
+        if ($request->featured) {
+            $query->where('featured', filter_var($request->featured, FILTER_VALIDATE_BOOLEAN));
+        }
+
         if($request->location_id){
             $query->whereIn('id', function($q) use ($request){
                 $q->select('property_id')
@@ -127,6 +131,7 @@ class PropertyController extends Controller
             'garden' => 'boolean',
             'garden_count' => 'nullable|integer|required_if:garden,true|min:0',
             'condition' => 'required|string',
+            'featured' => 'boolean',
             'type_id' => 'required|exists:types,id',
             'location_id' => 'required|exists:locations,id',
             'status_id' => 'required|exists:statuses,id',
@@ -153,6 +158,7 @@ class PropertyController extends Controller
             'garden_enabled' => $validated['garden'],
             'garden_count' => $validated['garden'] ? $validated['garden_count'] : null,
             'condition' => $validated['condition'],
+            'featured' => $validated['featured'] ?? false,
         ];
 
         // Handle image uploads
@@ -292,6 +298,7 @@ class PropertyController extends Controller
             'garden' => 'boolean',
             'garden_count' => 'nullable|integer|required_if:garden,true|min:0',
             'condition' => 'required|string',
+            'featured' => 'boolean',
             'type_id' => 'sometimes|exists:types,id',
             'location_id' => 'sometimes|exists:locations,id',
             'status_id' => 'sometimes|exists:statuses,id',
@@ -335,6 +342,7 @@ class PropertyController extends Controller
                         'garden_enabled' => $validated['garden'],
                         'garden_count' => $validated['garden'] ? $validated['garden_count'] : null,
                         'condition' => $validated['condition'],
+                        'featured' => $validated['featured'] ?? false,
                         'images' => json_encode($imagePaths),
                     ];
 
@@ -362,6 +370,7 @@ class PropertyController extends Controller
                     'garden_enabled' => $validated['garden'],
                     'garden_count' => $validated['garden'] ? $validated['garden_count'] : null,
                     'condition' => $validated['condition'],
+                    'featured' => $validated['featured'] ?? false,
                 ];
 
                 // Update property
