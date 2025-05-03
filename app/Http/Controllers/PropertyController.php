@@ -203,9 +203,9 @@ class PropertyController extends Controller
 
             // Eager load with nested relationships (CHANGED)
             $property->load([
-                'location.location',
-                'type.type',
-                'status.status'
+                'location',
+                'type',
+                'status'
             ]);
 
             return response()->json([
@@ -322,30 +322,6 @@ class PropertyController extends Controller
                         $imagePaths[] = $path;
                     }
 
-                    $propertyData = [
-                        'title' => $validated['title'],
-                        'description' => $validated['description'],
-                        'price' => $validated['price'],
-                        'space' => $validated['space'],
-                        'bedrooms' => $validated['bedrooms'],
-                        'bathrooms' => $validated['bathrooms'],
-                        'salons' => $validated['salons'],
-                        'kitchens' => $validated['kitchens'],
-                        'terraces_enabled' => $validated['terraces'],
-                        'terraces_count' => $validated['terraces'] ? $validated['terraces_count'] : null,
-                        'floors' => $validated['floors'],
-                        'living_rooms' => $validated['living_rooms'],
-                        'swimming_pools_enabled' => $validated['swimming_pools'],
-                        'swimming_pools_count' => $validated['swimming_pools'] ? $validated['swimming_pools_count'] : null,
-                        'parking_enabled' => $validated['parking'],
-                        'parking_count' => $validated['parking'] ? $validated['parking_count'] : null,
-                        'garden_enabled' => $validated['garden'],
-                        'garden_count' => $validated['garden'] ? $validated['garden_count'] : null,
-                        'condition' => $validated['condition'],
-                        'featured' => $validated['featured'] ?? false,
-                        'images' => json_encode($imagePaths),
-                    ];
-
 
                 }
 
@@ -373,6 +349,10 @@ class PropertyController extends Controller
                     'featured' => $validated['featured'] ?? false,
                 ];
 
+                if ($request->hasFile('images')) {
+                    $propertyData['images'] = json_encode($imagePaths);
+                }
+
                 // Update property
                 $property->update($propertyData);
 
@@ -398,9 +378,9 @@ class PropertyController extends Controller
             });
 
             $property->load([
-                'location.location',
-                'type.type',
-                'status.status'
+                'location',
+                'type',
+                'status'
             ]);
 
             $response = [
