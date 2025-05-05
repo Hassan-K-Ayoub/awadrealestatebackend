@@ -184,6 +184,9 @@ class PropertyController extends Controller
                     'updated_at' => now()
                 ]);
 
+                Location::where('id', $validated['location_id'])
+                    ->increment('count');
+
                 DB::table('property_type')->insert([
                     'property_id' => $property->id,
                     'type_id' => $validated['type_id'],
@@ -191,12 +194,18 @@ class PropertyController extends Controller
                     'updated_at' => now()
                 ]);
 
+                Type::where('id', $validated['type_id'])
+                    ->increment('count');
+
                 DB::table('property_status')->insert([
                     'property_id' => $property->id,
                     'status_id' => $validated['status_id'],
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
+
+                Status::where('id', $validated['status_id'])
+                    ->increment('count');
 
                 return $property;
             });
@@ -358,22 +367,40 @@ class PropertyController extends Controller
 
                 // Update pivot relationships if provided
                 if (isset($validated['type_id'])) {
+                    Type::where('id', $property->type_id)
+                        ->decrement('count');
+
                     PropertyType::updateOrCreate(
                         ['property_id' => $property->id],
                         ['type_id' => $validated['type_id']]
                     );
+
+                    Type::where('id', $validated['ltype_id'])
+                        ->increment('count');
                 }
                 if (isset($validated['location_id'])) {
+                    Location::where('id', $property->location_id)
+                        ->decrement('count');
+
                     PropertyLocation::updateOrCreate(
                         ['property_id' => $property->id],
                         ['location_id' => $validated['location_id']]
                     );
+
+                    Location::where('id', $validated['location_id'])
+                        ->increment('count');
                 }
                 if (isset($validated['status_id'])) {
+                    Status::where('id', $property->status_id)
+                        ->decrement('count');
+
                     PropertyStatus::updateOrCreate(
                         ['property_id' => $property->id],
                         ['status_id' => $validated['status_id']]
                     );
+
+                    Status::where('id', $validated['status_id'])
+                        ->increment('count');
                 }
             });
 
@@ -427,6 +454,10 @@ class PropertyController extends Controller
                 PropertyLocation::where('property_id', $property->id)->delete();
                 PropertyType::where('property_id', $property->id)->delete();
                 PropertyStatus::where('property_id', $property->id)->delete();
+                // Decrement counts in related tables
+                Location::where('id', $property->location_id)->decrement('count');
+                Type::where('id', $property->type_id)->decrement('count');
+                Status::where('id', $property->status_id)->decrement('count');
 
                 // Finally delete the property
                 $property->delete();

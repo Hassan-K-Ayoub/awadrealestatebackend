@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $users = [
-            ['name' => 'Ziad Awad', 'email' => 'contact@awadsrealestate.com', 'password' => '$2y$12$DSuXjPD0kNlOsnZ20eSS3.IsqcoL4siA6avax8pgy6/VafFaacnku'],
+            ['name' => 'Ziad Awad', 'email' => 'contact@awadsrealestate.com', 'password' => '$2y$12$88wUUkn9O.hhdQ6jNuId7uUiQV5pO1spxLq2OwGbkOdcdJvVVOvXe'],
         ];
 
         DB::table('users')->insert($users);

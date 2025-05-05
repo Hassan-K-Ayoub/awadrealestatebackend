@@ -14,18 +14,18 @@ class PropertyTypeSeeder extends Seeder
     public function run(): void
     {
         $types = [
-            ['type' => 'Villa', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Apartment', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Cabin', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Condo', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Townhouse', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Studio', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Loft', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Bungalow', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Chalet', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Farmhouse', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Penthouse', 'created_at' => now(), 'updated_at' => now()],
-            ['type' => 'Duplex', 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Villa', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Apartment', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Cabin', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Condo', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Townhouse', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Studio', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Loft', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Bungalow', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Chalet', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Farmhouse', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Penthouse', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['type' => 'Duplex', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
         ];
 
         DB::table('types')->insert($types);

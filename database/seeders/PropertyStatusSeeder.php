@@ -14,8 +14,8 @@ class PropertyStatusSeeder extends Seeder
     public function run(): void
     {
         $statuses = [
-            ['status' => 'For Rent', 'created_at' => now(), 'updated_at' => now()],
-            ['status' => 'For Sale', 'created_at' => now(), 'updated_at' => now()],
+            ['status' => 'For Rent', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['status' => 'For Sale', 'count' => 0, 'created_at' => now(), 'updated_at' => now()],
         ];
 
         DB::table('statuses')->insert($statuses);

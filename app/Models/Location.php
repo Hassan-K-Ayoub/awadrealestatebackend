@@ -8,7 +8,8 @@ use App\Models\Property;
 class Location extends Model
 {
     protected $fillable = [
-        'location'
+        'location',
+        'count'
     ];
 
     public function properties()
