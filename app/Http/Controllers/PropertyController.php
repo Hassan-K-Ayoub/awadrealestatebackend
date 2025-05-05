@@ -367,8 +367,13 @@ class PropertyController extends Controller
 
                 // Update pivot relationships if provided
                 if (isset($validated['type_id'])) {
-                    Type::where('id', $property->type_id)
-                        ->decrement('count');
+                    $propertyType = PropertyType::where('property_id', $property->id)->first();
+
+                    // Decrement counts in related tables
+                    if ($propertyType) {
+                        Type::where('id', $propertyType->type_id)
+                            ->decrement('count');
+                    }
 
                     PropertyType::updateOrCreate(
                         ['property_id' => $property->id],
@@ -379,8 +384,12 @@ class PropertyController extends Controller
                         ->increment('count');
                 }
                 if (isset($validated['location_id'])) {
-                    Location::where('id', $property->location_id)
-                        ->decrement('count');
+                    $propertyLocation = PropertyLocation::where('property_id', $property->id)->first();
+                    // Decrement counts in related tables
+                    if ($propertyLocation) {
+                        Location::where('id', $propertyLocation->location_id)
+                            ->decrement('count');
+                    }
 
                     PropertyLocation::updateOrCreate(
                         ['property_id' => $property->id],
@@ -391,8 +400,12 @@ class PropertyController extends Controller
                         ->increment('count');
                 }
                 if (isset($validated['status_id'])) {
-                    Status::where('id', $property->status_id)
-                        ->decrement('count');
+                    $propertyStatus = PropertyStatus::where('property_id', $property->id)->first();
+                    // Decrement counts in related tables
+                    if ($propertyStatus) {
+                        Status::where('id', $propertyStatus->status_id)
+                            ->decrement('count');
+                    }
 
                     PropertyStatus::updateOrCreate(
                         ['property_id' => $property->id],
@@ -450,14 +463,28 @@ class PropertyController extends Controller
                     }
                 }
 
+                $propertyLocation = PropertyLocation::where('property_id', $property->id)->first();
+                $propertyType = PropertyType::where('property_id', $property->id)->first();
+                $propertyStatus = PropertyStatus::where('property_id', $property->id)->first();
+
+                // Decrement counts in related tables
+                if ($propertyLocation) {
+                    Location::where('id', $propertyLocation->location_id)
+                        ->decrement('count');
+                }
+                if ($propertyType) {
+                    Type::where('id', $propertyType->type_id)
+                        ->decrement('count');
+                }
+                if ($propertyStatus) {
+                    Status::where('id', $propertyStatus->status_id)
+                        ->decrement('count');
+                }
+
                 // Detach relationships from pivot tables
                 PropertyLocation::where('property_id', $property->id)->delete();
                 PropertyType::where('property_id', $property->id)->delete();
                 PropertyStatus::where('property_id', $property->id)->delete();
-                // Decrement counts in related tables
-                Location::where('id', $property->location_id)->decrement('count');
-                Type::where('id', $property->type_id)->decrement('count');
-                Status::where('id', $property->status_id)->decrement('count');
 
                 // Finally delete the property
                 $property->delete();
