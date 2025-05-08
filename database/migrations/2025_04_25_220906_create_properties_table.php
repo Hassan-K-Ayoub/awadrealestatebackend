@@ -34,6 +34,7 @@ return new class extends Migration
             $table->integer('parking_count')->nullable();
             $table->string('condition')->required();
             $table->boolean('featured')->default(false);
+            $table->string('link')->nullable();
             $table->timestamps();
         });
     }

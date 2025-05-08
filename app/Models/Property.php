@@ -30,6 +30,7 @@ class Property extends Model
         'garden',
         'garden_count',
         'condition',
+        'link',
         'featured'
     ];
 

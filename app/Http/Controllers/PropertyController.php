@@ -131,6 +131,7 @@ class PropertyController extends Controller
             'garden' => 'boolean',
             'garden_count' => 'nullable|integer|required_if:garden,true|min:0',
             'condition' => 'required|string',
+            'link' => 'nullable|url',
             'featured' => 'boolean',
             'type_id' => 'required|exists:types,id',
             'location_id' => 'required|exists:locations,id',
@@ -158,6 +159,7 @@ class PropertyController extends Controller
             'garden_enabled' => $validated['garden'],
             'garden_count' => $validated['garden'] ? $validated['garden_count'] : null,
             'condition' => $validated['condition'],
+            'link' => $validated['link'] ?? null,
             'featured' => $validated['featured'] ?? false,
         ];
 
@@ -307,6 +309,7 @@ class PropertyController extends Controller
             'garden' => 'boolean',
             'garden_count' => 'nullable|integer|required_if:garden,true|min:0',
             'condition' => 'required|string',
+            'link' => 'nullable|url',
             'featured' => 'boolean',
             'type_id' => 'sometimes|exists:types,id',
             'location_id' => 'sometimes|exists:locations,id',
@@ -355,6 +358,7 @@ class PropertyController extends Controller
                     'garden_enabled' => $validated['garden'],
                     'garden_count' => $validated['garden'] ? $validated['garden_count'] : null,
                     'condition' => $validated['condition'],
+                    'link' => $validated['link'] ?? null,
                     'featured' => $validated['featured'] ?? false,
                 ];
 
