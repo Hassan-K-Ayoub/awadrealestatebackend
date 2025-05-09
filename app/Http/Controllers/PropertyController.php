@@ -21,6 +21,17 @@ class PropertyController extends Controller
      */
     public function index(Request $request)
     {
+
+        // Validate the request parameters
+        $validated = $request->validate([
+            'id' => 'nullable|integer|min:1',
+            'keyword' => 'nullable|string|max:255',
+            'featured' => 'nullable|boolean',
+            'location_id' => 'nullable|integer|exists:locations,id',
+            'type_id' => 'nullable|integer|exists:types,id',
+            'status_id' => 'nullable|integer|exists:statuses,id',
+        ]);
+
         $query = Property::query();
 
         if ($request->id) {
@@ -30,8 +41,8 @@ class PropertyController extends Controller
         // 🔎 Search by keyword (example: search in title or description)
         if ($request->keyword) {
             $query->where(function ($q) use ($request) {
-                $q->where('title', 'ILIKE', "%{$request->keyword}%")
-                  ->orWhere('description', 'ILIKE', "%{$request->keyword}%");
+                $q->where('title', 'like', "%{$request->keyword}%")
+                  ->orWhere('description', 'like', "%{$request->keyword}%");
             });
         }
 
