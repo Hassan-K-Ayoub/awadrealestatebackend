@@ -328,9 +328,9 @@ class PropertyController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($request, $validated, $property) {
+            $imagePaths = json_decode($property->images, true) ?? [];
+            DB::transaction(function () use ($request, $validated, $property, &$imagePaths) {
                 // Handle image updates if present
-                $imagePaths = $property->images ?? [];
 
                 if ($request->hasFile('images')) {
                     // Delete old images
@@ -395,7 +395,7 @@ class PropertyController extends Controller
                         ['type_id' => $validated['type_id']]
                     );
 
-                    Type::where('id', $validated['ltype_id'])
+                    Type::where('id', $validated['type_id'])
                         ->increment('count');
                 }
                 if (isset($validated['location_id'])) {
