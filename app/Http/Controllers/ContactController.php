@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Http\Response;
 
 class ContactController extends Controller
 {
@@ -29,33 +32,57 @@ class ContactController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $request->validate([
-            'full_name' => 'required|string|max:255',
-            'email' => 'email|max:255|unique:contacts,email',
-            'phone' => 'required|string|unique:contacts,phone',
-            'description' => 'nullable|string|max:1000',
-        ]);
+{
+    // Validate request
+    $validated = $request->validate([
+        'full_name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'phone' => 'required|string',
+        'description' => 'nullable|string|max:1000',
+    ]);
 
-        if (Contact::where('phone', $request->phone)->exists()) {
+    try {
+        DB::beginTransaction();
+
+        // Rate limiting by phone (3 requests per 30 mins)
+        $phoneKey = 'contact_submissions_phone:' . $validated['phone'];
+        if (RateLimiter::tooManyAttempts($phoneKey, 3)) {
+            $retryAfter = RateLimiter::availableIn($phoneKey);
             return response()->json([
-                'message' => 'The phone number has already been taken.',
-                'errors' => ['phone' => ['This phone number is already in use.']]
-            ], 422);
+                'message' => 'Too many requests for this phone number.',
+                'errors' => ['phone' => ["Please try again in {$retryAfter} seconds."]],
+                'retry_after' => $retryAfter,
+            ], Response::HTTP_TOO_MANY_REQUESTS);
         }
+        RateLimiter::hit($phoneKey, 1800); // 30 minutes
 
-        // Check if email exists (only if email was provided)
-        if ($request->has('email') && $request->email && Contact::where('email', $request->email)->exists()) {
+        // Rate limiting by email (3 requests per 30 mins)
+        $emailKey = 'contact_submissions_email:' . $validated['email'];
+        if (RateLimiter::tooManyAttempts($emailKey, 3)) {
+            $retryAfter = RateLimiter::availableIn($emailKey);
             return response()->json([
-                'message' => 'The email has already been taken.',
-                'errors' => ['email' => ['This email is already in use.']]
-            ], 422);
+                'message' => 'Too many requests for this email.',
+                'errors' => ['email' => ["Please try again in {$retryAfter} seconds."]],
+                'retry_after' => $retryAfter,
+            ], Response::HTTP_TOO_MANY_REQUESTS);
         }
+        RateLimiter::hit($emailKey, 1800); // 30 minutes
 
-        $contact = Contact::create($request->all());
+        // Create contact
+        $contact = Contact::create($validated);
+        DB::commit();
 
-        return response()->json($contact, 201);
+        return response()->json($contact, Response::HTTP_CREATED);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'message' => 'Failed to process your request.',
+            'error' => $e->getMessage(),
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+}
 
     /**
      * Display the specified resource.
