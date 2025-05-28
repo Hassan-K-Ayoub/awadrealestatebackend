@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             PropertyStatusSeeder::class,
             PropertyLocationSeeder::class,
             UserSeeder::class,
+            LocationSeeder::class,
         ]);
     }
 }
