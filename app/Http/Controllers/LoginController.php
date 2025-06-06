@@ -10,12 +10,13 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-
-
-
+use Carbon\Carbon;
 
 class LoginController extends Controller
 {
+    // Token expiration time in minutes (configurable)
+    protected $tokenExpiration = 360; // 6 hours
+
     public function login(Request $request)
     {
         // 1. Rate Limiting (5 attempts per minute per IP/email)
@@ -60,15 +61,15 @@ class LoginController extends Controller
         // 6. Revoke old tokens (optional but recommended)
         $user->tokens()->delete();
 
-        // 7. Create new Sanctum token
-        $token = $user->createToken('api-login')->plainTextToken;
+        // 7. Create new Sanctum token with expiration
+        $token = $user->createToken('api-login', ['*'], now()->addMinutes($this->tokenExpiration))->plainTextToken;
 
         return response()->json([
             'token' => $token,
-            'user' => $user, // Optional
+            'user' => $user,
+            'token_expires_at' => now()->addMinutes($this->tokenExpiration)->toDateTimeString(),
         ]);
     }
-
 
     public function logout(Request $request)
     {
@@ -83,4 +84,45 @@ class LoginController extends Controller
             'message' => 'Successfully logged out',
         ]);
     }
+
+    public function checkToken(Request $request)
+{
+    $user = $request->user();
+
+    if (!$user) {
+        return response()->json([
+            'valid' => false,
+            'message' => 'No authenticated user',
+        ], 401);
+    }
+
+    $token = $user->currentAccessToken();
+
+    if (!$token) {
+        return response()->json([
+            'valid' => false,
+            'message' => 'No active token found',
+        ], 401);
+    }
+
+    $expiresAt = $token->created_at->addMinutes($this->tokenExpiration);
+    $remainingMinutes = now()->diffInMinutes($expiresAt, false); // Returns negative if expired
+
+    if ($remainingMinutes <= 0) {
+        $user->currentAccessToken()->delete(); // Auto-logout
+        return response()->json([
+            'valid' => false,
+            'message' => 'Token expired',
+            'remaining_minutes' => 0,
+        ], 401);
+    }
+
+    return response()->json([
+        'valid' => true,
+        'expires_at' => $expiresAt->toDateTimeString(),
+        'remaining hours' => $remainingMinutes / 60,
+        'remaining_minutes' => $remainingMinutes,
+        'remaining_seconds' => now()->diffInSeconds($expiresAt), // More precise
+    ]);
+}
 }
